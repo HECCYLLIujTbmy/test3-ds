@@ -1,0 +1,37 @@
+name: Deploy Debian with iproute2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Build and push Docker images
+      run: |
+        docker build -t debian-iproute2 -f dockerfile1 .
+        docker build -t http-server -f dockerfile2 .
+      
+    - name: Run Docker container with HTTP server
+      run: docker run -d --name my-http-server http-server
+      
+    - name: Wait for HTTP server to start
+      run: sleep 10
+      
+    - name: Run Docker container with Debian and iproute2
+      run: |
+        docker run -d --name my-debian debian-iproute2
+        docker exec my-debian /bin/ss -tulpn > result.txt
+        docker cp my-debian:/result.txt .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: result
+        path: result.txt

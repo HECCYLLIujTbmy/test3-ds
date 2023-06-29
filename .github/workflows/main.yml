@@ -1,0 +1,24 @@
+name: Docker Build and Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
+    - name: Build and run Docker container
+      run: |
+        docker build -t iproute2-container -f Dockerfile_iproute2 .
+        docker run -d --name iproute2-container iproute2-container
+        
+        sleep 10
+        
+        docker build -t http-server-container -f Dockerfile_http .
+        docker run -d --name http-server-container -p 9000:9000 http-server-container

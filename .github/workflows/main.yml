@@ -1,4 +1,4 @@
-name: Docker Build and Run
+name: Docker Actions
 
 on:
   push:
@@ -8,17 +8,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    
-    - name: Build and run Docker container
+
+    - name: Build and run Docker container1
       run: |
-        docker build -t iproute2-container -f Dockerfile_iproute2 .
-        docker run -d --name iproute2-container iproute2-container
-        
-        sleep 10
-        
-        docker build -t http-server-container -f Dockerfile_http .
-        docker run -d --name http-server-container -p 9000:9000 http-server-container
+        docker build -t debian-iproute2 -f Dockerfile1 .
+        docker run -d --name iproute2-container debian-iproute2 /bin/ss -tulpn > output.txt
+
+    - name: Build and run Docker container2
+      run: |
+        docker build -t http-server -f Dockerfile2 .
+        docker run -d --name http-server-container -p 9000:9000 http-server
+
+    - name: Copy output.txt artifact
+      run: docker cp iproute2-container:/output.txt .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: output
+        path: output.txt
